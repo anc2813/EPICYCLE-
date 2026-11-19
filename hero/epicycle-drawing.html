@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f0eee9">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
+<title>Fourier Epicycle Drawing Machine</title>
+<style>
+  /* Epicycle brand palette
+     --cloud  #f0eee9  Cloud Dancer    primary (85%)  backgrounds
+     --deep   #30194b  Deepest Purple  anchor (10%)   headlines, bold data, main trace
+     --mid    #401476  Mid-Dark Purple secondary (4%) UI borders, axes, circles
+     --lilac  #e2a9f1  Neuro-Lavender  accent (1%)    CTAs and the "noticeable change" point */
+  :root {
+    --cloud: #f0eee9;
+    --deep: #30194b;
+    --mid: #401476;
+    --lilac: #e2a9f1;
+
+    --paper: var(--cloud);
+    --ink: var(--deep);
+    --muted: rgba(64,20,118,.72);
+    --accent: var(--lilac);
+    --line: rgba(48,25,75,.18);
+    --panel: rgba(240,238,233,.88);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    width:100%; height:100%; margin:0; overflow:hidden;
+    overscroll-behavior:auto;                 /* let scrolling pass through to the page */
+    -webkit-tap-highlight-color:transparent;
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+  }
+  body {
+    color:var(--ink);
+    background:var(--paper);
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  canvas { position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+  .topbar {
+    position:fixed; z-index:2; top:0; left:0; right:0;
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:20px 24px; pointer-events:none;
+  }
+  .brand, .hint {
+    pointer-events:auto;
+    background:var(--panel); border:1px solid var(--line);
+    box-shadow:0 8px 28px rgba(48,25,75,.06);
+    backdrop-filter: blur(10px);
+  }
+  .brand { padding:11px 15px 10px; border-radius:4px; }
+  .eyebrow { font:700 9px/1.2 ui-sans-serif,system-ui,sans-serif; letter-spacing:.22em; color:var(--mid); text-transform:uppercase; }
+  h1 { margin:4px 0 0; font-size:clamp(18px,2.3vw,25px); font-weight:500; letter-spacing:-.035em; }
+  .hint { padding:10px 13px; border-radius:4px; color:var(--muted); font:11px/1.5 ui-sans-serif,system-ui,sans-serif; text-align:right; }
+  .hint strong { color:var(--ink); font-weight:650; }
+  .controls {
+    position:fixed; z-index:3; left:50%; bottom:20px; transform:translateX(-50%);
+    display:flex; align-items:center; gap:7px; flex-wrap:wrap; justify-content:center;
+    width:max-content; max-width:calc(100vw - 24px);
+    padding:9px; border:1px solid var(--line); border-radius:7px;
+    background:var(--panel); box-shadow:0 10px 34px rgba(48,25,75,.12);
+    backdrop-filter:blur(12px);
+    font:11px ui-sans-serif,system-ui,sans-serif;
+  }
+  button {
+    appearance:none; border:1px solid var(--line); border-radius:4px;
+    background:transparent; color:var(--ink); padding:9px 12px;
+    font:600 11px ui-sans-serif,system-ui,sans-serif; cursor:pointer;
+    transition:background .18s,border-color .18s,transform .18s;
+  }
+  button:hover { background:rgba(226,169,241,.3); border-color:var(--mid); }
+  button:active { transform:translateY(1px); }
+  button.primary { background:var(--deep); color:var(--cloud); border-color:var(--deep); }
+  button.primary:hover { background:var(--mid); }
+  .divider { width:1px; height:25px; background:var(--line); margin:0 3px; }
+  .count { min-width:78px; text-align:center; color:var(--muted); }
+  .count b { color:var(--ink); font-size:13px; }
+  .status {
+    position:fixed; z-index:2; left:24px; bottom:28px;
+    color:var(--muted); font:10px ui-sans-serif,system-ui,sans-serif;
+    letter-spacing:.04em; pointer-events:none;
+  }
+  .status .dot { display:inline-block; width:6px; height:6px; margin-right:7px; border-radius:50%; background:var(--mid); vertical-align:1px; }
+  .draw-cursor { position:fixed; z-index:2; right:24px; bottom:30px; color:var(--muted); font:10px ui-sans-serif,system-ui,sans-serif; pointer-events:none; }
+  @media (max-width:700px) {
+    .topbar { padding:12px; }
+    .hint { display:none; }
+    .brand { padding:9px 11px; }
+    .controls { bottom:10px; gap:5px; padding:7px; }
+    button { padding:9px 10px; }
+    .status { left:14px; bottom:86px; }
+    .draw-cursor { display:none; }
+  }
+  @media (max-width:390px) {
+    .controls { width:calc(100vw - 16px); }
+    .count { min-width:62px; }
+  }
+
+  /* Minimal gallery layout: no bottom toolbar or bottom overlays. */
+  .controls,.status,.draw-cursor { display:none !important; }
+  .topbar { padding:max(22px,env(safe-area-inset-top)) max(26px,env(safe-area-inset-right)) 22px max(26px,env(safe-area-inset-left)); }
+  .brand { background:rgba(240,238,233,.72); }
+  .hint { border:0; box-shadow:none; background:transparent; backdrop-filter:none; }
+  @media(max-width:700px) {
+    .topbar { padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 14px max(14px,env(safe-area-inset-left)); }
+    .hint { display:block; font-size:9px; padding:4px 0; }
+  }
+
+  /* Hero heading: slides in from the left. Deepest Purple on Cloud Dancer (brand headline role). */
+  .hero {
+    position:fixed; z-index:2; left:0; top:0;
+    padding:max(28px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));
+    pointer-events:none; color:var(--deep);
+  }
+  .hero-title {
+    margin:0; color:var(--deep);
+    font-family:"Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+    font-weight:400; font-size:clamp(34px,10.5vw,64px);
+    line-height:.94; letter-spacing:-.02em;
+  }
+  .hero-title .line {
+    display:block; opacity:0; transform:translateX(-72px);
+    animation:heroSlide 1.2s cubic-bezier(.22,1,.36,1) forwards;
+    animation-delay:calc(.2s + var(--i,0) * .14s);
+  }
+  @keyframes heroSlide { to { opacity:1; transform:none; } }
+  /* Wide screens: heading vertically centred on the left, drawing on the right. */
+  @media (min-width:700px) and (min-aspect-ratio:11/10) {
+    .hero {
+      top:50%; transform:translateY(-50%); max-width:42vw;
+      padding:0 0 0 max(clamp(28px,6vw,96px),env(safe-area-inset-left));
+    }
+    .hero-title { font-size:clamp(40px,5.6vw,104px); }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .hero-title .line { animation:none; opacity:1; transform:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="canvas" aria-label="Interactive Fourier epicycle drawing canvas"></canvas>
+
+<header class="hero" id="hero">
+  <h1 class="hero-title">
+    <span class="line" style="--i:0">Understanding</span>
+    <span class="line" style="--i:1">behaviour.</span>
+    <span class="line" style="--i:2">Designing change.</span>
+  </h1>
+</header>
+
+
+
+<div hidden><span id="statusText"></span><span id="countLabel"></span><span id="totalLabel"></span><button id="playBtn"></button><button id="nextBtn"></button><button id="lessBtn"></button><button id="moreBtn"></button><button id="resetBtn"></button></div>
+
+<script>
+(() => {
+  // Epicycle brand palette (see the CSS comment above for each colour's role).
+  const CLOUD = '#f0eee9';   // Cloud Dancer: background (primary)
+  const DEEP  = '#30194b';   // Deepest Purple: the drawn trace (anchor)
+  const MID   = '#401476';   // Mid-Dark Purple: circles, radius lines, guides (secondary)
+  const LILAC = '#e2a9f1';   // Neuro-Lavender: the moving tip, the one "noticeable change" (accent)
+
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const statusText = document.getElementById('statusText');
+  const countLabel = document.getElementById('countLabel');
+  const totalLabel = document.getElementById('totalLabel');
+  const playBtn = document.getElementById('playBtn');
+
+  const N = 300;
+  const TAU = Math.PI * 2;
+  let width = 0, height = 0, dpr = 1;
+  let center = {x:0,y:0}, fitScale = 1;
+  let origin = {x:0,y:0};                      // where the shape's unit-space origin sits on screen
+  let bounds = {cx:0, cy:0, w:1, h:1};         // bounding box of the current shape, in shape units
+  let pointerId = null, downAt = 0, downPos = null, wasPlaying = true;
+  const coarse = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const DRAW_THRESHOLD = 10;                   // px a finger must travel before a touch counts as drawing
+  let coefficients = [];
+  let circleCount = 80;
+  let trace = [];
+  let time = 0;
+  let playing = true;
+  let drawing = false;
+  let liveStroke = [];
+  let currentName = 'EPICYCLE MARK';
+  let lastInputAt = performance.now();
+  let autoIndex = 0;
+  let lastFrame = performance.now();
+  const cycleSeconds = 11;
+
+  const C = (x=0,y=0) => ({x,y});
+  const add = (a,b) => C(a.x+b.x,a.y+b.y);
+  const mul = (a,s) => C(a.x*s,a.y*s);
+  const magnitude = a => Math.hypot(a.x,a.y);
+  const angle = a => Math.atan2(a.y,a.x);
+
+  const hero = document.getElementById('hero');
+  const wideMQ = window.matchMedia ? matchMedia('(min-width:700px) and (min-aspect-ratio:11/10)') : null;
+  const reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  let introStart = null;
+
+  function layout() {
+    // The heading sits on the left on wide screens, and above the drawing on a phone in portrait.
+    // The drawing is fitted into whatever space is left (the "stage"), so no shape runs off-screen.
+    const wide = !!(wideMQ && wideMQ.matches);
+    let stage;
+    if (wide) {
+      stage = {x: width*.42, y: 0, w: width*.58, h: height};
+    } else {
+      const top = hero ? Math.min(hero.offsetTop + hero.offsetHeight + 8, height*.6) : 0;
+      stage = {x: 0, y: top, w: width, h: Math.max(height - top, 120)};
+    }
+    const k = wide ? .55 : .72;                       // share of the stage the shape may fill
+    fitScale = Math.min(stage.w*k/bounds.w, stage.h*k/bounds.h);
+    center = {x: stage.x + stage.w/2, y: stage.y + stage.h/2};
+    origin = {x: center.x - bounds.cx*fitScale, y: center.y - bounds.cy*fitScale};
+  }
+
+  function resize() {
+    // Read the canvas's own size: mobile browsers change innerHeight as the address bar slides.
+    const r = canvas.getBoundingClientRect();
+    const w = Math.round(r.width) || window.innerWidth;
+    const h = Math.round(r.height) || window.innerHeight;
+    const d = Math.max(1, Math.min(coarse ? 2 : 3, window.devicePixelRatio || 1));
+    if (w !== width || h !== height || d !== dpr) {
+      width = w; height = h; dpr = d;
+      canvas.width = Math.round(width*dpr);
+      canvas.height = Math.round(height*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      center = {x:width/2, y:height/2};
+    }
+    layout();   // the trace is stored in shape units, so it survives resizing and rotation
+  }
+  window.addEventListener('resize', resize, {passive:true});
+  window.addEventListener('orientationchange', resize);
+  if (window.ResizeObserver) { const ro = new ResizeObserver(resize); ro.observe(canvas); if (hero) ro.observe(hero); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);   // heading height changes once the web font loads
+  resize();
+
+  // The opening study is the supplied EPICYCLE symbol: a solid block with two inward arcs.
+  function logoShape() {
+    const p = [];
+    const addLine = (a,b,steps=24) => {
+      for(let i=0;i<steps;i++){
+        const u=i/steps;
+        p.push(C(a.x+(b.x-a.x)*u, a.y+(b.y-a.y)*u));
+      }
+    };
+    const addArc = (cy, steps=52) => {
+      // Concave semicircle cut into the right edge, travelling from top to bottom.
+      for(let i=0;i<steps;i++){
+        const a=-Math.PI/2 + Math.PI*i/steps;
+        p.push(C(10.2-5.8*Math.cos(a), cy+5.8*Math.sin(a)));
+      }
+    };
+    addLine(C(-10.2,-13.15), C(10.2,-13.15));
+    addLine(C(10.2,-13.15), C(10.2,-12.05), 5);
+    addArc(-6.3);
+    addLine(C(10.2,-.5), C(10.2,.5), 5);
+    addArc(6.3);
+    addLine(C(10.2,12.05), C(10.2,13.15), 5);
+    addLine(C(10.2,13.15), C(-10.2,13.15));
+    addLine(C(-10.2,13.15), C(-10.2,-13.15));
+    return resample(p,N);
+  }
+  // Catmull-Rom interpolation makes hand-built control points into a smooth closed stroke.
+  function spline(points, stepsPerSegment=14, closed=true) {
+    const out = [];
+    const len = points.length;
+    for (let i=0;i<(closed?len:len-1);i++) {
+      const p0=points[(i-1+len)%len], p1=points[i], p2=points[(i+1)%len], p3=points[(i+2)%len];
+      for(let j=0;j<stepsPerSegment;j++) {
+        const t=j/stepsPerSegment, t2=t*t, t3=t2*t;
+        const x=.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3);
+        const y=.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3);
+        out.push(C(x,y));
+      }
+    }
+    if (!closed) out.push(points[points.length-1]);
+    return out;
+  }
+
+  function starShape() {
+    const p=[];
+    for(let i=0;i<10;i++){
+      const a=-Math.PI/2+i*Math.PI/5, r=i%2?8:18;
+      p.push(C(Math.cos(a)*r,Math.sin(a)*r));
+    }
+    return spline(p,18,true);
+  }
+
+  function clefShape() {
+    // A single flowing treble-clef-like line, approximated with spline anchors.
+    const p=[
+      C(2,24),C(-5,20),C(-9,11),C(-7,2),C(0,-7),C(9,-13),
+      C(10,-21),C(4,-26),C(-2,-23),C(-3,-16),C(2,-11),
+      C(9,-8),C(12,-1),C(8,8),C(1,15),C(-5,22),C(-4,29),
+      C(2,33),C(8,29),C(8,23),C(4,20),C(0,23),C(0,28)
+    ];
+    return spline(p,10,false);
+  }
+
+  function wordShape() {
+    // "hello" as one loose cursive gesture; return along the same stroke to close the path.
+    const p=[
+      C(-25,5),C(-22,-3),C(-18,-6),C(-16,2),C(-19,8),C(-13,5),
+      C(-8,-5),C(-5,-6),C(-7,4),C(-10,9),C(-3,7),C(1,0),
+      C(4,-7),C(7,-4),C(5,4),C(2,9),C(9,8),C(14,1),
+      C(17,-7),C(20,-6),C(18,3),C(15,9),C(22,7),C(26,1)
+    ];
+    const forward=spline(p,8,false);
+    return forward.concat(forward.slice(0,-1).reverse());
+  }
+
+  function resample(points, count=N) {
+    // Equal arc-length spacing prevents the Fourier fit from over-weighting slow hand movements.
+    const cumulative=[0];
+    for(let i=1;i<points.length;i++) cumulative.push(cumulative[i-1]+magnitude(C(points[i].x-points[i-1].x,points[i].y-points[i-1].y)));
+    const total=cumulative[cumulative.length-1];
+    if (!total) return points.slice(0,count);
+    const result=[]; let seg=1;
+    for(let i=0;i<count;i++){
+      const target=total*i/count;
+      while(seg<cumulative.length-1 && cumulative[seg]<target) seg++;
+      const a=points[seg-1], b=points[seg], span=cumulative[seg]-cumulative[seg-1];
+      const u=span?(target-cumulative[seg-1])/span:0;
+      result.push(C(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u));
+    }
+    return result;
+  }
+
+  // Direct O(N²) DFT. Each coefficient stores signed frequency, amplitude and phase.
+  function dft(points) {
+    const result=[];
+    for(let k=0;k<points.length;k++){
+      let re=0, im=0;
+      for(let n=0;n<points.length;n++){
+        const a=-TAU*k*n/points.length, p=points[n];
+        re += p.x*Math.cos(a)-p.y*Math.sin(a);
+        im += p.x*Math.sin(a)+p.y*Math.cos(a);
+      }
+      re/=points.length; im/=points.length;
+      const freq=k<=points.length/2?k:k-points.length;
+      result.push({freq, amp:Math.hypot(re,im), phase:Math.atan2(im,re)});
+    }
+    return result.sort((a,b)=>b.amp-a.amp);
+  }
+
+  function loadShape(points, name) {
+    const sampled=resample(points,N);
+    let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+    for(const p of sampled){
+      if(p.x<minX) minX=p.x; if(p.x>maxX) maxX=p.x;
+      if(p.y<minY) minY=p.y; if(p.y>maxY) maxY=p.y;
+    }
+    bounds={cx:(minX+maxX)/2, cy:(minY+maxY)/2, w:Math.max(maxX-minX,1), h:Math.max(maxY-minY,1)};
+    layout();
+    coefficients=dft(sampled);
+    circleCount=Math.min(circleCount,coefficients.length);
+    time=0; trace=[]; currentName=name;
+    lastInputAt=performance.now();
+    updateLabels();
+  }
+
+  function updateLabels(){
+    countLabel.textContent=circleCount;
+    totalLabel.textContent=N;
+    statusText.textContent=currentName+' · '+N+' SAMPLES';
+  }
+
+  function fitPoint(p) { return C(center.x+p.x*fitScale,center.y+p.y*fitScale); }
+
+  function drawBackground() {
+    ctx.fillStyle=CLOUD; ctx.fillRect(0,0,width,height);
+    // Very subtle grain, drawn as sparse dots rather than an image texture.
+    ctx.save(); ctx.globalAlpha=.08; ctx.fillStyle=MID;
+    for(let y=18;y<height;y+=31) for(let x=(y%2?13:27);x<width;x+=37) ctx.fillRect(x,y,1,1);
+    ctx.restore();
+  }
+
+  function drawOriginalGuide() {
+    if(!coefficients.length) return;
+    // no heavy guide: the moving trace is the artwork
+  }
+
+  function drawFrame(now) {
+    const dt=Math.min(.04,(now-lastFrame)/1000); lastFrame=now;
+    // Drawing eases in from the right just after the heading starts to slide in.
+    if(introStart===null) introStart=now;
+    const it=reduceMotion?1:Math.min(1,(now-introStart-250)/1400);
+    const ie=it<=0?0:1-Math.pow(1-it,3);
+    if(playing && !drawing) {
+      time += dt/cycleSeconds*TAU;
+      if(time>=TAU){
+        time=0; trace=[];
+      }
+    }
+    drawBackground();
+
+    if(drawing) {
+      if(liveStroke.length>1){
+        ctx.beginPath(); ctx.moveTo(liveStroke[0].x,liveStroke[0].y);
+        for(let i=1;i<liveStroke.length;i++) ctx.lineTo(liveStroke[i].x,liveStroke[i].y);
+        ctx.strokeStyle=MID; ctx.lineWidth=3; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
+      }
+      requestAnimationFrame(drawFrame); return;
+    }
+
+    ctx.save();
+    ctx.globalAlpha=ie; ctx.translate((1-ie)*56,0);
+    // The epicycle maths runs in shape units; the current layout maps them to pixels,
+    // so rotating the phone or an address-bar resize never wipes the trace.
+    const used=coefficients.slice(0,circleCount);
+    let tu=C(0,0), tip=C(origin.x,origin.y);
+    for(const ep of used){
+      const a=ep.phase+ep.freq*time;
+      const nu=C(tu.x+ep.amp*Math.cos(a), tu.y+ep.amp*Math.sin(a));
+      const from=tip;
+      const to=C(origin.x+nu.x*fitScale, origin.y+nu.y*fitScale);
+      const r=ep.amp*fitScale;
+      if(r>.35){   // skip sub-pixel circles: invisible, and they cost frames on phones
+        // Circles and radius vectors are intentionally faint; the trace remains the focus.
+        ctx.beginPath(); ctx.arc(from.x,from.y,r,0,TAU);
+        ctx.strokeStyle='rgba(64,20,118,.22)'; ctx.lineWidth=.8; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(from.x,from.y); ctx.lineTo(to.x,to.y);
+        ctx.strokeStyle='rgba(64,20,118,.4)'; ctx.lineWidth=1; ctx.stroke();
+      }
+      tu=nu; tip=to;
+    }
+    trace.push(tu);
+    if(trace.length>1800) trace.shift();
+
+    if(trace.length>1){
+      ctx.beginPath(); ctx.moveTo(origin.x+trace[0].x*fitScale, origin.y+trace[0].y*fitScale);
+      for(let i=1;i<trace.length;i++) ctx.lineTo(origin.x+trace[i].x*fitScale, origin.y+trace[i].y*fitScale);
+      ctx.strokeStyle=DEEP;
+      ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
+    }
+    // Mark the current endpoint: lavender dot with a deep-purple ring so it reads on the light background.
+    ctx.beginPath(); ctx.arc(tip.x,tip.y,4.6,0,TAU);
+    ctx.fillStyle=LILAC; ctx.fill();
+    ctx.strokeStyle=DEEP; ctx.lineWidth=1.6; ctx.stroke();
+
+    // Gentle progress arc around the cycle.
+    ctx.beginPath(); ctx.arc(center.x,center.y,5,-Math.PI/2,-Math.PI/2+time);
+    ctx.strokeStyle='rgba(64,20,118,.6)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.restore();
+
+    requestAnimationFrame(drawFrame);
+  }
+
+  function pointerPos(e) {
+    const r=canvas.getBoundingClientRect();
+    return C(e.clientX-r.left,e.clientY-r.top);
+  }
+  // Scrolling over the canvas: hand the wheel to the parent page so it can scroll
+  addEventListener('wheel',e=>{
+    if(window.parent!==window) parent.postMessage({type:'hero-wheel',deltaY:e.deltaY},'*');
+  },{passive:true});
+
+  canvas.addEventListener('pointerdown',e=>{
+    if(!e.isPrimary || pointerId!==null) return;   // ignore a second finger
+    pointerId=e.pointerId; downAt=performance.now();
+    downPos=pointerPos(e); liveStroke=[downPos];
+    try { canvas.setPointerCapture(e.pointerId); } catch(_) {}
+    lastInputAt=downAt;
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(e.pointerId!==pointerId) return;
+    // Coalesced events give smooth strokes on touch screens that report faster than the frame rate.
+    const evs=(e.getCoalescedEvents && e.getCoalescedEvents()) || [];
+    for(const ev of (evs.length?evs:[e])){
+      const p=pointerPos(ev), last=liveStroke[liveStroke.length-1];
+      if(!last || magnitude(C(p.x-last.x,p.y-last.y))>2) liveStroke.push(p);
+    }
+    // A tap must not interrupt the animation: drawing only starts once the finger has really moved.
+    const lastPt=liveStroke[liveStroke.length-1];
+    if(!drawing && magnitude(C(lastPt.x-downPos.x,lastPt.y-downPos.y))>DRAW_THRESHOLD){
+      drawing=true; wasPlaying=playing; playing=false;
+      playBtn.textContent='▶ Play';
+    }
+  });
+  function finishStroke(e){
+    if(e.pointerId!==pointerId) return;
+    pointerId=null;
+    const wasDrawing=drawing;
+    drawing=false;
+    if(wasDrawing && liveStroke.length>8){
+      // Center and scale the user's gesture into the same normalized drawing space.
+      const xs=liveStroke.map(p=>p.x), ys=liveStroke.map(p=>p.y);
+      const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+      const midX=(minX+maxX)/2, midY=(minY+maxY)/2;
+      const size=Math.max(maxX-minX,maxY-minY)||1;
+      const normalized=liveStroke.map(p=>C((p.x-midX)/size*44,(p.y-midY)/size*44));
+      // Close an open gesture by connecting its end back to its start.
+      normalized.push(normalized[0]);
+      loadShape(normalized,'YOUR DRAWING');
+      playing=true; playBtn.textContent='Ⅱ Pause';
+    } else if(wasDrawing){
+      // Stroke too short to use: carry on as before.
+      playing=wasPlaying; playBtn.textContent=playing?'Ⅱ Pause':'▶ Play';
+    } else if(e.type==='pointerup' && e.pointerType==='touch' && performance.now()-downAt<400){
+      // A quick tap on a touch screen moves to the next study (the keyboard's N key).
+      advanceStudy();
+    }
+    liveStroke=[];
+  }
+  canvas.addEventListener('pointerup',finishStroke);
+  canvas.addEventListener('pointercancel',finishStroke);
+
+  function changeCount(multiplier) {
+    circleCount=Math.max(4,Math.min(N,Math.round(circleCount*multiplier/2)*2));
+    updateLabels(); lastInputAt=performance.now();
+  }
+  document.getElementById('lessBtn').addEventListener('click',()=>changeCount(.5));
+  document.getElementById('moreBtn').addEventListener('click',()=>changeCount(2));
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    circleCount=80; loadShape(logoShape(),'EPICYCLE MARK'); playing=true; playBtn.textContent='Ⅱ Pause';
+  });
+  const advanceStudy = () => {
+    const shapes=[
+      {name:'STAR STUDY',points:starShape()},
+      {name:'TREBLE CLEF STUDY',points:clefShape()},
+      {name:'CURSIVE WORD STUDY',points:wordShape()},
+      {name:'EPICYCLE MARK',points:logoShape()}
+    ];
+    autoIndex=(autoIndex+1)%shapes.length;
+    loadShape(shapes[autoIndex].points,shapes[autoIndex].name);
+    playing=true; playBtn.textContent='Ⅱ Pause';
+  };
+  document.getElementById('nextBtn').addEventListener('click', advanceStudy);
+  playBtn.addEventListener('click',()=>{
+    playing=!playing; playBtn.textContent=playing?'Ⅱ Pause':'▶ Play';
+    lastInputAt=performance.now();
+  });
+
+  window.addEventListener('keydown',e=>{
+    if(e.key.toLowerCase()==='n'){advanceStudy();}
+    if(e.key==='ArrowLeft'){e.preventDefault();changeCount(.5);}
+    if(e.key==='ArrowRight'){e.preventDefault();changeCount(2);}
+    if(e.code==='Space' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){
+      e.preventDefault(); playBtn.click();
+    }
+  });
+
+
+  loadShape(logoShape(),'EPICYCLE MARK');
+  requestAnimationFrame(drawFrame);
+})();
+</script>
+</body>
+</html>
