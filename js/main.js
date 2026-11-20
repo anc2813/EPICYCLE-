@@ -405,11 +405,11 @@
       const data = new FormData(event.target);
 
       if (!data.get("name") || !data.get("email") || !data.get("message")) {
-        status.textContent = "Please add your name, email and challenge.";
+        status.textContent = "Please add your name, email and challenge";
         return;
       }
 
-      status.textContent = `Opening your email app. If nothing opens, write to ${CONTACT_EMAIL}.`;
+      status.textContent = `Opening your email app. If nothing opens, write to ${CONTACT_EMAIL}`;
 
       const subject = "Enquiry from " + data.get("name");
       const body = [
