@@ -11,7 +11,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 28%27%3E%3Cpath fill=%27%2330194b%27 fill-rule=%27evenodd%27 d=%27M0 0H24V28H0ZM24 1.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11ZM24 15.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11Z%27/%3E%3C/svg%3E">
 
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">  <!-- fallback only -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css">
@@ -64,10 +64,10 @@
 <section id="hero">
   <iframe title="Epicycle — interactive epicycle drawing" src="hero/epicycle-drawing.html" loading="eager"></iframe>
   <a class="cue" href="#services" aria-label="Scroll to services">
-  <!--<video autoplay loop muted playsinline preload="auto">
+  <video autoplay loop muted playsinline preload="auto">
     <source src="assets/idea.webm" type="video/webm">
     <source src="assets/idea.mp4" type="video/mp4">
-  </video>-->
+  </video>
 </a>
 </section>
 
@@ -410,7 +410,7 @@ MARQUEE -->
       </div>
       <div data-r>
         <p>Our healthcare focus is grounded in our CEO’s experience in public health communication, national programmes and institutional partnerships. The method travels because the underlying decision is always human</p>
-        <video class="about__video" autoplay loop muted playsinline preload="auto" aria-hidden="true">
+        <video class="about__doctor" autoplay loop muted playsinline preload="auto" aria-hidden="true">
           <source src="assets/idea.webm" type="video/webm">
           <source src="assets/idea.mp4" type="video/mp4">
         </video>
@@ -457,127 +457,3 @@ MARQUEE -->
 
       <div class="m">
         <div class="ph"><img src="assets/images/team-fateh-amin.jpg" alt="Fateh Amin"></div>
-        <h4>Fateh Amin</h4>
-        <small>Physical Branding &amp; Spatial Design Lead</small>
-        <p>An interior designer with ten years of experience in people flow and physical branding: how people move through a space, and what the space tells them to do</p>
-        <p class="tg">Spatial design · Physical branding</p>
-      </div>
-
-      <div class="m">
-        <div class="ph"><img src="assets/images/team-razan-abbas.jpg" alt="Razan Abbas"></div>
-        <h4>Razan Abbas</h4>
-        <small>Marketing Manager</small>
-        <p>Leads social media, paid advertising and content performance. Experience across digital marketing, PR and events in Khartoum and Cairo</p>
-        <p class="tg">Paid media · Content · Performance</p>
-      </div>
-
-    </div>
-
-    <div class="wide" data-r>
-      <span class="eyebrow">A wider circle</span>
-      <h3 class="serif">One team. The right expertise around it</h3>
-      <p>We work with a network of specialists in research, data, design and development, bringing the right expertise to each challenge</p>
-    </div>
-  </section>
-
-
-  <!-- ======================================================================
-       CALL TO ACTION — expanding disc + floating document
-       ====================================================================== -->
-  <div id="cta">
-    <div id="disc"></div>
-    <div class="in">
-      <span class="eyebrow">Let’s work together</span>
-      <h2>
-        <span class="l"><i>Let’s understand</i></span>
-        <span class="l"><i>what <em>moves</em> your</i></span>
-        <span class="l"><i>audience</i></span>
-      </h2>
-      <p class="cta__text">Tell us what you’re trying to achieve. We’ll tell you what we would study first</p>
-      <a class="btn" href="#contact" data-h>Start a conversation</a>
-      <img id="doc" alt="" loading="lazy" src="assets/images/cta-document.png">
-    </div>
-  </div>
-
-
-  <!-- ======================================================================
-       CONTACT
-       ====================================================================== -->
-  <section id="contact" class="dark">
-    <span class="eyebrow" data-r>Get in touch</span>
-    <h2>
-      <span class="l"><i>Let’s start</i></span>
-      <span class="l"><i>a <em>conversation</em></i></span>
-    </h2>
-
-    <div class="two-col">
-
-      <!-- Details -->
-      <div data-r>
-        <p class="contact__lead">Tell us what you’re trying to achieve. We’ll identify what we would study first</p>
-        <p>
-          <a class="big-link" href="mailto:contact.epicycle@gmail.com">contact.epicycle@gmail.com</a>
-          <a class="big-link" href="tel:+249900068067">+249 90 006 8067</a>
-          <a class="big-link" href="https://instagram.com/epicyclecomms">@epicyclecomms</a>
-        </p>
-        <p class="serif contact__quote">The first conversation costs nothing<br>The second one is a proposal</p>
-      </div>
-
-      <!-- Form (opens the visitor's email app; nothing is sent or stored) -->
-      <form id="cf" data-r novalidate>
-        <label for="cn">Your name</label>
-        <input id="cn" name="name" autocomplete="name" required>
-
-        <label for="ce">Your email</label>
-        <input id="ce" name="email" type="email" autocomplete="email" required>
-
-        <label for="ct">What are you working on?</label>
-        <select id="ct" name="topic">
-          <option>A new project</option>
-          <option>Research &amp; Data</option>
-          <option>Communications &amp; Creative</option>
-          <option>Technology &amp; Products</option>
-          <option>Growth &amp; Media</option>
-          <option>A partnership</option>
-        </select>
-
-        <label for="cm">Tell us about your challenge</label>
-        <textarea id="cm" name="message" rows="4" required></textarea>
-
-        <button class="btn" type="submit" data-h>Prepare your message →</button>
-        <p id="cs" role="status" class="note">We’ll prepare an email for you to review and send from your own email app. This website does not send or store your message</p>
-      </form>
-
-    </div>
-  </section>
-
-
-  <!-- ======================================================================
-       FOOTER
-       ====================================================================== -->
-  <footer>
-    <span>EPICYCLE COMMS<br>Behavioural communications. For healthcare and beyond</span>
-    <span>
-      <a href="#services">What we do</a> ·
-      <a href="#method">Method</a> ·
-      <a href="#sectors">Sectors</a> ·
-      <a href="#work">Work</a> ·
-      <a href="#about">About</a> ·
-      <a href="#team">Team</a>
-    </span>
-    <span>© 2026 Epicycle Comms · Understanding people. Designing change<br>
-      <a href="mailto:contact.epicycle@gmail.com">contact.epicycle@gmail.com</a> · +249 90 006 8067
-    </span>
-  </footer>
-
-
-  <!-- ======================================================================
-       SCRIPTS — libraries first, then the site script
-       ====================================================================== -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="js/main.js"></script>
-
-</body>
-</html>
