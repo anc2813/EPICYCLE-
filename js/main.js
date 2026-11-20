@@ -29,6 +29,9 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
+  // Phones: the address bar showing/hiding must not recalculate every trigger
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
   const $  = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
 
@@ -62,6 +65,43 @@
       if (!event.data || event.data.type !== "hero-wheel") return;
       if (lenis) lenis.scrollTo(lenis.scroll + event.data.deltaY * 2, { duration: 0.6 });
       else       scrollBy({ top: event.data.deltaY, behavior: "auto" });
+    });
+  }
+
+
+  /* ========================================================================
+     1b. HERO — the drawing shows alone; scrolling reveals the heading
+     --------------------------------------------------------------------
+     The hero is pinned for a short scroll. Its progress (0 → 1) is sent to the
+     iframe, which slides the heading lines in. Scrolling back hides them again.
+     ======================================================================== */
+
+  function initHero() {
+    const hero  = $("#hero");
+    const frame = hero.querySelector("iframe");
+    let progress = 0;
+
+    const send = (p) => {
+      progress = p;
+      try { frame.contentWindow.postMessage({ type: "hero-progress", progress: p }, "*"); } catch (_) {}
+    };
+
+    frame.addEventListener("load", () => send(progress));
+
+    if (prefersReducedMotion) {          // no pin, heading simply follows the first scroll
+      addEventListener("scroll", () => send(scrollY > 20 ? 1 : 0), { passive: true });
+      return;
+    }
+
+    ScrollTrigger.create({
+      trigger: hero,
+      start: "top top",
+      end: "+=60%",
+      pin: true,
+      scrub: true,
+      anticipatePin: 1,
+      onUpdate: (self) => send(self.progress),
+      onRefresh: (self) => send(self.progress),
     });
   }
 
@@ -121,6 +161,7 @@
 
   function initMarquee() {
     const marquee = $("#mq");
+    if (!marquee) return;          // marquee is optional: nothing to animate when it is removed from the page
     let offset = 0;
 
     gsap.ticker.add(() => {
@@ -177,28 +218,29 @@
 
     const onUpdate = (self) => renderOrbit(Math.max(0.01, self.progress));
 
-    ScrollTrigger.matchMedia({
-      // Desktop: pin the section and scrub through it
-      "(min-width:901px)": () => {
-        ScrollTrigger.create({
-          trigger: "#method",
-          start: "top top",
-          end: "+=220%",
-          pin: true,
-          scrub: true,
-          onUpdate,
-        });
-      },
-      // Mobile / tablet: no pin, scrub while the section scrolls past
-      "(max-width:900px)": () => {
-        ScrollTrigger.create({
-          trigger: "#method",
-          start: "top 80%",
-          end: "bottom 30%",
-          scrub: true,
-          onUpdate,
-        });
-      },
+    const mm = gsap.matchMedia();
+
+    // Big screens: pin the section and scrub through it
+    mm.add("(min-width: 901px) and (min-height: 561px)", () => {
+      ScrollTrigger.create({
+        trigger: "#method",
+        start: "top top",
+        end: "+=220%",
+        pin: true,
+        scrub: true,
+        onUpdate,
+      });
+    });
+
+    // Phones, tablets, short screens: no pin, scrub while the section scrolls past
+    mm.add("(max-width: 900px), (max-height: 560px)", () => {
+      ScrollTrigger.create({
+        trigger: "#method",
+        start: "top 80%",
+        end: "bottom 30%",
+        scrub: true,
+        onUpdate,
+      });
     });
   }
 
@@ -232,7 +274,8 @@
      ======================================================================== */
 
   function initTeam() {
-    const COLUMNS = 5;
+    const team    = $(".team");
+    const COLUMNS = team ? getComputedStyle(team).gridTemplateColumns.split(" ").length : 5;
 
     $$(".m").forEach((member, i) => {
       const trigger = { trigger: member, start: "top 85%" };
@@ -370,6 +413,24 @@
 
 
   /* ========================================================================
+     10b. TOUCH SCREENS — hover effects play when the element is mid-screen
+     ======================================================================== */
+
+  function initTouchActive() {
+    if (!matchMedia("(hover: none)").matches) return;
+
+    $$(".card, .sec a, .m, .w, .big-link").forEach((element) => {
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top 62%",
+        end: "bottom 42%",
+        toggleClass: { targets: element, className: "is-active" },
+      });
+    });
+  }
+
+
+  /* ========================================================================
      11. WORK FILTER — show only the chosen category
      ======================================================================== */
 
@@ -433,6 +494,7 @@
   initSmoothScroll();
   initHeroWheel();
   initAnchorLinks();
+  initHero();
   initReveals();
   initMarquee();
   initMethod();
@@ -442,7 +504,12 @@
   initMobileMenu();
   initNavLogo();
   initCta();
+  initTouchActive();
   initWorkFilter();
   initContactForm();
+
+  // Fonts and images change the layout: measure again once they are in
+  document.fonts && document.fonts.ready.then(() => ScrollTrigger.refresh());
+  addEventListener("load", () => ScrollTrigger.refresh());
 
 })();
