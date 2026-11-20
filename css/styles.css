@@ -280,12 +280,6 @@ section {
   transition: .5s var(--ex);
 }
 
-.btn:hover {
-  background: var(--lilac);
-  color: var(--deep);
-  border-color: var(--lilac);
-  padding-right: 36px;
-}
 
 /* ---- Cards ---- */
 .card {
@@ -328,8 +322,6 @@ section {
   transition: .9s var(--ex);
 }
 
-.card:hover::before { transform: scale(2.6); }
-.card:hover         { color: var(--deep); }
 .card > *           { position: relative; }
 
 .card .n {
@@ -376,9 +368,6 @@ section {
   font-size: 15px;
 }
 
-.card:hover .bl li {
-  border-color: rgba(48, 25, 75, .3);
-}
 
 /* ---- Accessibility ---- */
 :focus-visible {
@@ -490,9 +479,6 @@ nav.is-scrolled .logo {
   font: 400 clamp(40px, 12vw, 64px)/1.1 var(--font);
 }
 
-#menu a:hover {
-  color: var(--lilac);
-}
 
 /* ---- Side dots (section indicator) ---- */
 .dots {
@@ -737,10 +723,6 @@ nav.is-scrolled .logo {
   transition: .4s var(--ex);
 }
 
-.flt button:hover {
-  background: var(--deep);
-  color: var(--cloud);
-}
 
 .flt button.on {
   background: var(--lilac);
@@ -838,9 +820,6 @@ nav.is-scrolled .logo {
   transition: transform .8s var(--ex);
 }
 
-.w:hover .vis b {
-  transform: scale(1.1) rotate(-4deg);
-}
 
 /* Text side */
 .w .tag {
@@ -893,10 +872,6 @@ nav.is-scrolled .logo {
   transition: .6s var(--ex);
 }
 
-.sec a:hover {
-  padding-left: 3vw;
-  color: var(--lilac);
-}
 
 .sec a span {
   max-width: 26em;
@@ -1051,9 +1026,6 @@ nav.is-scrolled .logo {
   font: 400 clamp(26px, 3.6vw, 48px) var(--font);
 }
 
-.big-link:hover {
-  color: var(--lilac);
-}
 
 /* Form */
 #cf label {
@@ -1110,9 +1082,6 @@ footer span {
   max-width: 26em;
 }
 
-footer a:hover {
-  color: var(--lilac);
-}
 
 
 /* ==========================================================================
@@ -1272,13 +1241,6 @@ footer a:hover {
   transition: scale .8s var(--ex), filter .8s var(--ex);
 }
 
-.m:hover .ph {
-  animation-play-state: paused;
-  translate: 0 -14px;
-  box-shadow: 0 24px 50px -12px rgba(226, 169, 241, .45);
-}
-.m:hover .ph::after { translate: 120% 0; }
-.m:hover img        { scale: 1.06; filter: saturate(1.15); }
 
 /* name: lilac underline that draws in */
 .m h4 {
@@ -1298,16 +1260,12 @@ footer a:hover {
   transform-origin: left;
   transition: scale .6s var(--ex);
 }
-.m:hover h4        { color: var(--lilac); translate: 6px 0; }
-.m:hover h4::after { scale: 1 1; }
 
 /* role + skill tags: slight lift in colour and spacing */
 .m small,
 .m .tg {
   transition: opacity .4s ease, letter-spacing .5s var(--ex);
 }
-.m:hover small { opacity: 1; }
-.m:hover .tg   { letter-spacing: .1em; }
 
 @media (prefers-reduced-motion: reduce) {
   .m .ph,
@@ -1316,3 +1274,244 @@ footer a:hover {
   .m h4,
   .m h4::after { animation: none !important; transition: none !important; }
 }
+
+
+/* ==========================================================================
+   11. HOVER (mouse only) + TOUCH TWINS
+   --------------------------------------------------------------------------
+   Hover effects only run where a real mouse exists. On touch screens the same
+   effect plays when the element is in the middle of the screen (.is-active is
+   added by main.js) or while it is being pressed (:active).
+   ========================================================================== */
+
+@media (hover: hover) {
+  .btn:hover {
+    background: var(--lilac);
+    color: var(--deep);
+    border-color: var(--lilac);
+    padding-right: 36px;
+  }
+  .card:hover::before { transform: scale(2.6);
+  }
+  .card:hover { color: var(--deep);
+  }
+  .card:hover .bl li {
+    border-color: rgba(48, 25, 75, .3);
+  }
+  #menu a:hover {
+    color: var(--lilac);
+  }
+  .flt button:hover {
+    background: var(--deep);
+    color: var(--cloud);
+  }
+  .w:hover .vis b {
+    transform: scale(1.1) rotate(-4deg);
+  }
+  .sec a:hover {
+    padding-left: 3vw;
+    color: var(--lilac);
+  }
+  .big-link:hover {
+    color: var(--lilac);
+  }
+  footer a:hover {
+    color: var(--lilac);
+  }
+  .m:hover .ph {
+    animation-play-state: paused;
+    translate: 0 -14px;
+    box-shadow: 0 24px 50px -12px rgba(226, 169, 241, .45);
+  }
+  .m:hover .ph::after { translate: 120% 0;
+  }
+  .m:hover img { scale: 1.06; filter: saturate(1.15);
+  }
+  .m:hover h4 { color: var(--lilac); translate: 6px 0;
+  }
+  .m:hover h4::after { scale: 1 1;
+  }
+  .m:hover small { opacity: 1;
+  }
+  .m:hover .tg { letter-spacing: .1em;
+  }
+}
+
+.btn:active {
+  background: var(--lilac);
+  color: var(--deep);
+  border-color: var(--lilac);
+  padding-right: 36px;
+}
+.card.is-active::before { transform: scale(2.6);
+}
+.card.is-active { color: var(--deep);
+}
+.card.is-active .bl li {
+  border-color: rgba(48, 25, 75, .3);
+}
+#menu a:active {
+  color: var(--lilac);
+}
+.flt button:active {
+  background: var(--deep);
+  color: var(--cloud);
+}
+.w.is-active .vis b {
+  transform: scale(1.1) rotate(-4deg);
+}
+.sec a.is-active {
+  padding-left: 3vw;
+  color: var(--lilac);
+}
+.big-link:active {
+  color: var(--lilac);
+}
+footer a:active {
+  color: var(--lilac);
+}
+.m.is-active .ph {
+  animation-play-state: paused;
+  translate: 0 -14px;
+  box-shadow: 0 24px 50px -12px rgba(226, 169, 241, .45);
+}
+.m.is-active .ph::after { translate: 120% 0;
+}
+.m.is-active img { scale: 1.06; filter: saturate(1.15);
+}
+.m.is-active h4 { color: var(--lilac); translate: 6px 0;
+}
+.m.is-active h4::after { scale: 1 1;
+}
+.m.is-active small { opacity: 1;
+}
+.m.is-active .tg { letter-spacing: .1em;
+}
+
+
+/* ==========================================================================
+   12. MOBILE & TABLET
+   ========================================================================== */
+
+/* ---- Lenis (smooth scroll) required rules ---- */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-scrolling iframe { pointer-events: none; }   /* the hero canvas never steals a scroll */
+
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; overflow-x: clip; }
+img, video { max-width: 100%; }
+button, a { touch-action: manipulation; }
+
+/* ---- Fluid type: Proxima Nova is wider than the old serif ---- */
+h2                { font-size: clamp(30px, 6.2vw, 96px); overflow-wrap: break-word; }
+#cta h2           { font-size: clamp(34px, 7vw, 110px); }
+.method__title    { font-size: clamp(30px, min(5vw, 7.5vh), 80px); }
+.two-col h3,
+.wide h3          { font-size: clamp(26px, 3.6vw, 52px); line-height: 1.1; }
+blockquote        { font-size: clamp(24px, 3.6vw, 56px); }
+.w h3             { font-size: clamp(28px, 4vw, 60px); }
+.sec a            { font-size: clamp(28px, 4.6vw, 76px); }
+.big-link         { overflow-wrap: anywhere; }
+
+/* ---- Pinned Method only where it fits (big screens); stacked everywhere else ---- */
+@media (max-width: 900px), (max-height: 560px) {
+  #method {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+    padding: clamp(72px, 12vh, 120px) 0 clamp(56px, 10vh, 100px);
+  }
+  #method .tx { padding: 0 6vw; position: relative; z-index: 1; }
+  #orb {
+    position: absolute;
+    top: 6vh;
+    right: -30vw;
+    width: min(110vw, 760px);
+    opacity: .16;
+    pointer-events: none;
+  }
+  .st .d { max-height: 6em; opacity: .8; margin-top: 6px; }   /* details always readable when not pinned */
+}
+
+/* ---- Tablet: 601–900px ---- */
+@media (max-width: 900px) {
+  section { padding: clamp(64px, 11vh, 110px) clamp(20px, 6vw, 56px); }
+  .two-col { gap: 32px; margin-top: 7vh; }
+  .grid4 { gap: 16px; }
+  .about__video { margin-inline: auto; width: min(100%, 360px); }
+
+  /* team: 2 columns, the odd last card is centred */
+  .team .m:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc(50% - 8px);
+    justify-self: center;
+  }
+
+  .w { padding: 22px; border-radius: 26px; }
+  .w .vis { width: min(100%, 360px); margin: 0 auto; }
+  .w::before { font-size: clamp(48px, 12vw, 90px); }
+}
+
+/* ---- Phone: ≤ 600px ---- */
+@media (max-width: 600px) {
+  body { font-size: 16px; font-weight: 400; }
+  .sec a span,
+  .m p, .card p, .note { font-weight: 400; }
+
+  nav { padding: 16px 5vw; }
+  .btn { width: 100%; justify-content: center; }
+
+  .flt { gap: 8px; }
+  .team { gap: 28px 12px; }
+  .m h4 { font-size: 22px; }
+
+  .sec a { padding: 22px 0; gap: 8px; }
+  .sec a span { font-size: 14px; }
+
+  .st { gap: 14px; }
+  .st strong { font-size: 24px; }
+
+  #cta { min-height: 120svh; }
+  #doc { width: min(60vw, 240px); }
+
+  footer { flex-direction: column; gap: 14px; }
+  #cf input, #cf select, #cf textarea { font-size: 16px; }   /* stops iOS zooming into fields */
+}
+
+/* ---- Menu overlay: scrolls on short screens ---- */
+#menu { overflow-y: auto; padding-block: 90px 40px; }
+@media (max-height: 520px) { #menu a { font-size: 28px; } }
+
+/* ---- Touch screens: comfortable tap targets ---- */
+@media (hover: none), (pointer: coarse) {
+  .flt button, .mb, .btn { min-height: 44px; }
+  .flt button { padding-inline: 20px; }
+  .btn:hover { padding-right: 26px; }
+}
+
+/* ---- Reduced motion: the touch twins stay still too ---- */
+@media (prefers-reduced-motion: reduce) {
+  .is-active, .is-active * { transition: none !important; }
+}
+
+
+/* ==========================================================================
+   13. MOBILE & TABLET — polish
+   ========================================================================== */
+
+/* tablets get the menu button too; the side dots only fit on wide screens */
+@media (max-width: 1024px) {
+  .gt  { display: none; }
+  .mb  { display: inline-block; }
+  #menu { display: flex; }
+}
+@media (max-width: 1279px) {
+  .dots { display: none; }
+}
+
+/* Proxima needs more line height than the old serif */
+.serif, h1, h2   { line-height: 1.08; }
+.contact__quote  { line-height: 1.25; font-size: clamp(22px, 3vw, 28px); }
+.big-link        { font-size: clamp(19px, 5.2vw, 44px); overflow-wrap: break-word; }
